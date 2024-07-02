@@ -64,18 +64,29 @@ const App = () => {
   }, []);
 
   const addPerson = (newPerson) => {
-    if (persons.some((person) => person.name === newPerson.name)) {
-      alert(`${newPerson.name} is already added to phonebook`);
-      return;
+    const existingPerson = persons.find(person => person.name === newPerson.name);
+
+    if (existingPerson) {
+      if (window.confirm(`${newPerson.name} is already added to phonebook, replace the old number with a new one?`)) {
+        const updatedPerson = { ...existingPerson, number: newPerson.number };
+
+        personsService.update(existingPerson.id, updatedPerson)
+          .then(returnedPerson => {
+            setPersons(persons.map(person => person.id !== existingPerson.id ? person : returnedPerson));
+          })
+          .catch(error => {
+            console.error('Error updating person:', error);
+          });
+      }
+    } else {
+      const personWithId = { ...newPerson, id: (persons.length + 1).toString() };
+
+      personsService.create(personWithId).then(returnedPerson => {
+        setPersons([...persons, returnedPerson]);
+      }).catch(error => {
+        console.error('Error adding person:', error);
+      });
     }
-
-    const personWithId = { ...newPerson, id: (persons.length + 1).toString() };
-
-    personsService.create(personWithId).then(returnedPerson => {
-      setPersons([...persons, returnedPerson]);
-    }).catch(error => {
-      console.error('Error adding person:', error);
-    });
   };
 
   const deletePerson = (id) => {
@@ -89,27 +100,27 @@ const App = () => {
     }
   };
 
-    const handleSearch = (event) => {
-      setSearchTerm(event.target.value);
-    };
-
-    return (
-      <div>
-        <h2>Phonebook</h2>
-        <div>
-          filter shown with: <input value={searchTerm} onChange={handleSearch} />
-        </div>
-        <h2>add a new</h2>
-        <PersonForm
-          addPerson={addPerson}
-          newName={newName}
-          setNewName={setNewName}
-          newNumber={newNumber}
-          setNewNumber={setNewNumber}
-        />
-        <PersonList persons={persons} searchTerm={searchTerm} onDelete={deletePerson} />
-      </div>
-    );
+  const handleSearch = (event) => {
+    setSearchTerm(event.target.value);
   };
 
-  export default App;
+  return (
+    <div>
+      <h2>Phonebook</h2>
+      <div>
+        filter shown with: <input value={searchTerm} onChange={handleSearch} />
+      </div>
+      <h2>add a new</h2>
+      <PersonForm
+        addPerson={addPerson}
+        newName={newName}
+        setNewName={setNewName}
+        newNumber={newNumber}
+        setNewNumber={setNewNumber}
+      />
+      <PersonList persons={persons} searchTerm={searchTerm} onDelete={deletePerson} />
+    </div>
+  );
+};
+
+export default App;
