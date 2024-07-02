@@ -71,7 +71,15 @@ const App = () => {
     }
 
     const personWithId = { ...newPerson, id: persons.length + 1 };
-    setPersons([...persons, personWithId]);
+
+    axios
+      .post('http://localhost:3001/persons', personWithId)
+      .then((response) => {
+        setPersons([...persons, response.data]);
+      })
+      .catch((error) => {
+        console.error('Error adding person:', error);
+      });
   };
 
   const handleSearch = (event) => {
