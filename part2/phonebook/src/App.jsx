@@ -1,15 +1,16 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import personsService from './services/persons';
 
 // Component for rendering a single person
-const Person = ({ person }) => (
+const Person = ({ person, onDelete }) => (
   <div>
     {person.name} {person.number}
+    <button onClick={() => onDelete(person.id)}>delete</button>
   </div>
 );
 
 // Component for rendering the list of persons
-const PersonList = ({ persons, searchTerm }) => {
+const PersonList = ({ persons, searchTerm, onDelete }) => {
   const filteredPersons = persons.filter((person) =>
     person.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
@@ -18,7 +19,7 @@ const PersonList = ({ persons, searchTerm }) => {
     <div>
       <h2>Numbers</h2>
       {filteredPersons.map((person) => (
-        <Person key={person.id} person={person} />
+        <Person key={person.id} person={person} onDelete={onDelete} />
       ))}
     </div>
   );
@@ -54,11 +55,9 @@ const App = () => {
   const [searchTerm, setSearchTerm] = useState('');
 
   useEffect(() => {
-    axios
-      .get('http://localhost:3001/persons')
-      .then((response) => {
-        setPersons(response.data);
-      })
+    personsService.getAll().then(initialPersons => {
+      setPersons(initialPersons);
+    })
       .catch((error) => {
         console.error('Error fetching data:', error);
       });
@@ -70,39 +69,47 @@ const App = () => {
       return;
     }
 
-    const personWithId = { ...newPerson, id: persons.length + 1 };
+    const personWithId = { ...newPerson, id: (persons.length + 1).toString() };
 
-    axios
-      .post('http://localhost:3001/persons', personWithId)
-      .then((response) => {
-        setPersons([...persons, response.data]);
-      })
-      .catch((error) => {
-        console.error('Error adding person:', error);
+    personsService.create(personWithId).then(returnedPerson => {
+      setPersons([...persons, returnedPerson]);
+    }).catch(error => {
+      console.error('Error adding person:', error);
+    });
+  };
+
+  const deletePerson = (id) => {
+    const person = persons.find(p => p.id === id);
+    if (window.confirm(`Delete ${person.name}?`)) {
+      personsService.remove(id).then(() => {
+        setPersons(persons.filter(p => p.id !== id));
+      }).catch(error => {
+        console.error('Error deleting person:', error);
       });
+    }
   };
 
-  const handleSearch = (event) => {
-    setSearchTerm(event.target.value);
-  };
+    const handleSearch = (event) => {
+      setSearchTerm(event.target.value);
+    };
 
-  return (
-    <div>
-      <h2>Phonebook</h2>
+    return (
       <div>
-        filter shown with: <input value={searchTerm} onChange={handleSearch} />
+        <h2>Phonebook</h2>
+        <div>
+          filter shown with: <input value={searchTerm} onChange={handleSearch} />
+        </div>
+        <h2>add a new</h2>
+        <PersonForm
+          addPerson={addPerson}
+          newName={newName}
+          setNewName={setNewName}
+          newNumber={newNumber}
+          setNewNumber={setNewNumber}
+        />
+        <PersonList persons={persons} searchTerm={searchTerm} onDelete={deletePerson} />
       </div>
-      <h2>add a new</h2>
-      <PersonForm
-        addPerson={addPerson}
-        newName={newName}
-        setNewName={setNewName}
-        newNumber={newNumber}
-        setNewNumber={setNewNumber}
-      />
-      <PersonList persons={persons} searchTerm={searchTerm} />
-    </div>
-  );
-};
+    );
+  };
 
-export default App;
+  export default App;
