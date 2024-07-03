@@ -1,5 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import personsService from './services/persons';
+import Notification from './components/notification';
+import './index.css'; // Import the CSS file
+
 
 // Component for rendering a single person
 const Person = ({ person, onDelete }) => (
@@ -53,6 +56,7 @@ const App = () => {
   const [newName, setNewName] = useState('');
   const [newNumber, setNewNumber] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
+  const [notification, setNotification] = useState({ message: null, type: '' });
 
   useEffect(() => {
     personsService.getAll().then(initialPersons => {
@@ -62,6 +66,13 @@ const App = () => {
         console.error('Error fetching data:', error);
       });
   }, []);
+
+  const showNotification = (message, type = 'success') => {
+    setNotification({ message, type });
+    setTimeout(() => {
+      setNotification({ message: null, type: '' });
+    }, 5000);
+  };
 
   const addPerson = (newPerson) => {
     const existingPerson = persons.find(person => person.name === newPerson.name);
@@ -73,9 +84,11 @@ const App = () => {
         personsService.update(existingPerson.id, updatedPerson)
           .then(returnedPerson => {
             setPersons(persons.map(person => person.id !== existingPerson.id ? person : returnedPerson));
+            showNotification(`Updated ${newPerson.name}'s number`);
           })
           .catch(error => {
             console.error('Error updating person:', error);
+            showNotification(`Error updating ${newPerson.name}'s number`, 'error');
           });
       }
     } else {
@@ -83,8 +96,10 @@ const App = () => {
 
       personsService.create(personWithId).then(returnedPerson => {
         setPersons([...persons, returnedPerson]);
+        showNotification(`Added ${newPerson.name}`);
       }).catch(error => {
         console.error('Error adding person:', error);
+        showNotification(`Error adding ${newPerson.name}`, 'error');
       });
     }
   };
@@ -94,8 +109,10 @@ const App = () => {
     if (window.confirm(`Delete ${person.name}?`)) {
       personsService.remove(id).then(() => {
         setPersons(persons.filter(p => p.id !== id));
+        showNotification(`Deleted ${person.name}`);
       }).catch(error => {
         console.error('Error deleting person:', error);
+        showNotification(`Information of ${person.name} has already been removed from server`, 'error');
       });
     }
   };
@@ -107,6 +124,7 @@ const App = () => {
   return (
     <div>
       <h2>Phonebook</h2>
+      <Notification message={notification.message} type={notification.type} />
       <div>
         filter shown with: <input value={searchTerm} onChange={handleSearch} />
       </div>
