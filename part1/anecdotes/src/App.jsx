@@ -6,8 +6,8 @@ const Header = ({ text }) => {
 
 const Anecdote = ({ anecdote, vote }) => (
   <div>
-      <div>{anecdote}</div>
-      <div>has {vote} votes</div>
+    <div>{anecdote}</div>
+    <div>has {vote} votes</div>
   </div>
 );
 

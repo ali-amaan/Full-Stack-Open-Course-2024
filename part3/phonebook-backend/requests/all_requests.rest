@@ -1,0 +1,52 @@
+# Get all persons
+GET http://localhost:3001/api/persons
+
+###
+# Get a single person by ID
+GET http://localhost:3001/api/persons/1
+
+###
+# Get info
+GET http://localhost:3001/info
+
+###
+# Add a new person
+POST http://localhost:3001/api/persons
+Content-Type: application/json
+
+{
+  "name": "John Doe",
+  "number": "123-4567890"
+}
+
+###
+# Add a new person with missing number
+POST http://localhost:3001/api/persons
+Content-Type: application/json
+
+{
+  "name": "John Doe"
+}
+
+###
+# Add a new person with missing name
+POST http://localhost:3001/api/persons
+Content-Type: application/json
+
+{
+  "number": "425405402"
+}
+
+###
+# Add a new person with duplicate name
+POST http://localhost:3001/api/persons
+Content-Type: application/json
+
+{
+  "name": "Arto Hellas",
+  "number": "50274254"
+}
+
+###
+# Delete a person by ID
+DELETE http://localhost:3001/api/persons/424379
