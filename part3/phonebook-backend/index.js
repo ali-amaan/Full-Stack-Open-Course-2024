@@ -1,8 +1,11 @@
 const express = require('express');
 const morgan = require('morgan');
 const app = express();
+const cors = require('cors')
 
+app.use(cors())
 app.use(express.json()); // Middleware to parse JSON bodies
+app.use(express.static('dist'))
 
 // Custom token to log request body
 morgan.token('body', (req) => JSON.stringify(req.body));
@@ -41,9 +44,9 @@ app.get('/api/persons', (req, res) => {
     res.json(persons);
 });
 
-app.get('/', (req, res) => {
-    res.send('<h1>Phonebook Backend</h1>');
-});
+// app.get('/', (req, res) => {
+//     res.send('<h1>Phonebook Backend</h1>');
+// });
 
 app.get('/info', (req, res) => {
     const currentDate = new Date();
@@ -100,7 +103,7 @@ app.post('/api/persons', (req, res) => {
     res.json(newPerson);
 });
 
-const PORT = 3001;
+const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
 });
