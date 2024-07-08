@@ -1,5 +1,5 @@
 # Get all persons
-GET http://localhost:3001/api/persons
+GET https://full-stack-open-course-2024.onrender.com/api/persons
 
 ###
 # Get a single person by ID
